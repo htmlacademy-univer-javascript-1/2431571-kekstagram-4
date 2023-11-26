@@ -16,5 +16,13 @@ const getRandomIdFromRange = (min, max) => {
   };
 };
 
-export {getRandomInt, getRandomIdFromRange};
+const isEscapeKey = (evt) => evt.key === 'Esc' || evt.key === 'Escape';
+
+const closeOnEscKeyDown = (evt, cb) => {
+  if (isEscapeKey(evt)) {
+    cb();
+  }
+};
+
+export {getRandomInt, getRandomIdFromRange, closeOnEscKeyDown};
 
