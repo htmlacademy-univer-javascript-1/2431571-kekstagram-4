@@ -1,115 +1,137 @@
-import { imagePreview  } from './form.js';
+const modalElement = document.querySelector('.img-upload');
+const imageElement = modalElement.querySelector('.img-upload__preview img');
+const effectsElement = modalElement.querySelector('.effects');
+const sliderElement = modalElement.querySelector('.effect-level__slider');
+const sliderContainer = modalElement.querySelector('.img-upload__effect-level');
+const effectLevelElement = modalElement.querySelector('.effect-level__value');
 
-const slider = document.querySelector('.effect-level__slider');
-const sliderWrapper = document.querySelector('.effect-level');
-const effectValue = document.querySelector('.effect-level__value');
-const effectList = document.querySelector('.effects__list');
-
-
-const Effects = {
-  chrome: {
-    filter: 'grayscale',
-    units: '',
-    options: {
-      range: {
-        min: 0,
-        max: 1
-      },
-      start: 1,
-      step: 0.1
-    }
-  },
-  sepia: {
-    filter: 'sepia',
-    units: '',
-    options: {
-      range: {
-        min: 0,
-        max: 1
-      },
-      start: 1,
-      step: 0.1
-    }
-  },
-  marvin: {
-    filter: 'invert',
-    units: '%',
-    options: {
-      range: {
-        min: 0,
-        max: 100,
-      },
-      start: 100,
-      step: 1
-    }
-  },
-  phobos: {
-    filter: 'blur',
-    units: 'px',
-    options: {
-      range: {
-        min: 0,
-        max: 3
-      },
-      start: 3,
-      step: 0.1
-    }
-  },
-  heat: {
-    filter: 'brightness',
-    units: '',
-    options: {
-      range: {
-        min: 1,
-        max: 3
-      },
-      start: 3,
-      step: 0.1
-    }
-  }
+const effect = {
+  DEFAULT: 'none',
+  CHROME: 'chrome',
+  SEPIA: 'sepia',
+  MARVIN: 'marvin',
+  PHOBOS: 'phobos',
+  HEAT: 'heat',
 };
 
-const initEffects = () => {
-  noUiSlider.create(slider, {
-    range: {
-      min: 0,
-      max: 100
-    },
-    start: 100,
-    step: 0.1,
+const effectToFilter = {
+  [effect.CHROME]: {
+    style: 'grayscale',
+    unit: '',},
+  [effect.SEPIA]: {
+    style: 'sepia',
+    unit: '',},
+  [effect.MARVIN]: {
+    style: 'invert',
+    unit: '%',},
+  [effect.HEAT]: {
+    style: 'brightness',
+    unit: '',},
+  [effect.PHOBOS]: {
+    style: 'blur',
+    unit: 'px',},
+};
+
+const effectToSliderOptions = {
+  [effect.DEFAULT]: {
+    min: 0,
+    max: 100,
+    step: 1,},
+  [effect.CHROME]: {
+    min: 0,
+    max: 1,
+    step: 0.1,},
+  [effect.SEPIA]: {
+    min: 0,
+    max: 1,
+    step: 0.1,},
+  [effect.MARVIN]: {
+    min: 0,
+    max: 100,
+    step: 1,},
+  [effect.PHOBOS]: {
+    min: 0,
+    max: 3,
+    step: 0.1,},
+  [effect.HEAT]: {
+    min: 0,
+    max: 3,
+    step: 0.1,},
+};
+
+let chosenEffect = effect.DEFAULT;
+
+const isDefault = () => chosenEffect === effect.DEFAULT;
+
+const setImageStyle = () => {
+  if (isDefault()) {
+    imageElement.style.filter = null;
+    return;
+  }
+  const {value} = effectLevelElement;
+  const {style, unit} = effectToFilter[chosenEffect];
+  imageElement.style.filter = `${style}(${value}${unit})`;
+};
+
+const onSliderUpd = () => {
+  effectLevelElement.value = sliderElement.noUiSlider.get();
+  setImageStyle();
+};
+
+const showSlider = () => sliderContainer.classList.remove('hidden');
+
+const hideSlider = () => sliderContainer.classList.add('hidden');
+
+const createSlider = ({ min, max, step }) => {
+  noUiSlider.create(sliderElement, {
+    range: { min, max },
+    step,
+    start: max,
     connect: 'lower',
     format: {
-      to: (value) => {
-        if (Number.isInteger(value)) {
-          return value.toFixed(0);
-        }
-        return value.toFixed(1);
-      },
-      from: (value) => parseFloat(value),
-    },
+      to: (value) => Number(value),
+      from: (value) => Number(value),
+    }
+  });
+  sliderElement.noUiSlider.on('update', onSliderUpd);
+  hideSlider();
+};
+
+const updSlider = ({ min, max, step }) => {
+  sliderElement.noUiSlider.updateOptions({
+    range: {min, max},
+    step,
+    start: max,
   });
 };
 
-initEffects();
-
-const updateFilter = (item) => {
-  effectValue.value = slider.noUiSlider.get();
-  imagePreview.style.filter = `${Effects[item].filter}(${effectValue.value}${Effects[item].units})`;
-};
-
-const onFilterButtonChange = (evt) => {
-  const target = evt.target.value;
-  if (target === 'none') {
-    sliderWrapper.classList.add('hidden');
-    imagePreview.style.filter = 'none';
+const setSlider = () => {
+  if (isDefault()) {
+    hideSlider();
   } else {
-    imagePreview.removeAttribute('class');
-    sliderWrapper.classList.remove('hidden');
-    imagePreview.classList.add(`effects__preview--${target}`);
-    slider.noUiSlider.updateOptions(Effects[target].options);
-    imagePreview.style.filter = `${Effects[target].filter}`;
-    slider.noUiSlider.on('update', () => updateFilter(target));
+    updSlider(effectToSliderOptions[chosenEffect]);
+    showSlider();
   }
 };
 
-export { onFilterButtonChange, initEffects, effectList, sliderWrapper };
+const setEffect = (result) => {
+  chosenEffect = result;
+  setSlider();
+  setImageStyle();
+};
+
+const resetEffect = () => setEffect(effect.DEFAULT);
+
+const onEffectsChange = (evt) => setEffect(evt.target.value);
+
+let sliderCreated = false;
+
+const initEffect = () => {
+  if (!sliderCreated) {
+    createSlider(effectToSliderOptions[chosenEffect]);
+    sliderCreated = true;
+    effectsElement.addEventListener('change', onEffectsChange);
+  }
+};
+
+export {resetEffect, initEffect};

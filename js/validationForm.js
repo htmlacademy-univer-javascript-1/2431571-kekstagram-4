@@ -1,100 +1,123 @@
-import { isEscapeKey } from './util.js';
-import { onFilterButtonChange, effectList, sliderWrapper } from './effects.js';
+import { closeOnEscKeyDown } from './util.js';
+import { MAX_HASHTAGS_COUNT, MAX_DESCRIPTION_LENGTH } from './data.js';
+import {resetEffect, initEffect} from './effects.js';
+import {resetScale} from './scale.js';
 
-const Zoom = {
-  MIN: 25,
-  MAX: 100,
-  STEP: 25,
-};
+const uploadForm = document.querySelector('.img-upload__form');
+const uploadInput = uploadForm.querySelector('.img-upload__input');
+const imageOverlay = uploadForm.querySelector('.img-upload__overlay.hidden');
+const closeButton = uploadForm.querySelector('.img-upload__cancel');
+const hashtagsField = uploadForm.querySelector('.text__hashtags');
+const descriptionField = uploadForm.querySelector('.text__description');
+const submitBtn = uploadForm.querySelector('#upload-submit');
 
-const body = document.querySelector('body');
-const formUpload = body.querySelector('.img-upload__form');
-const overlay = body.querySelector('.img-upload__overlay');
-const fileUpload = body.querySelector('#upload-file');
-const formUploadClose = body.querySelector('#upload-cancel');
-const scaleButtonSmaller = body.querySelector('.scale__control--smaller');
-const scaleButtonBigger = body.querySelector('.scale__control--bigger');
-const scaleButtonValue = body.querySelector('.scale__control--value');
-const imagePreview = body.querySelector('.img-upload__preview img');
-const imagesEffectPreview = body.querySelectorAll('.effects__preview');
+const validationForm = /^#[0-9a-zа-яё]{1,19}$/i;
 
-const closeForm = () => {
-  overlay.classList.add('hidden');
-  body.classList.remove('modal-open');
-  effectList.removeEventListener('change', onFilterButtonChange);
-
-  imagePreview.style.transform = '';
-  imagePreview.className = 'img-upload__preview';
-  imagePreview.style.filter = '';
-
-  formUpload.reset();
-};
-
-const onCloseFormEscKeyDown = (evt) => {
-  if (isEscapeKey(evt) &&
-      !evt.target.classList.contains('text__hashtags') &&
-      !evt.target.classList.contains('text__description')
-  ) {
-    evt.preventDefault();
-    closeForm();
-
-    document.removeEventListener('keydown', onCloseFormEscKeyDown);
-  }
-};
-
-const changeImages = () => {
-  const file = fileUpload.files[0];
-  const fileUrl = URL.createObjectURL(file);
-
-  imagePreview.src = fileUrl;
-
-  for (const imageEffectPreview of imagesEffectPreview) {
-    imageEffectPreview.style.backgroundImage = `url(${fileUrl})`;
-  }
-};
-
-const onFileUploadChange = () => {
-  overlay.classList.remove('hidden');
-  body.classList.add('modal-open');
-
-  changeImages();
-
-  document.addEventListener('keydown', onCloseFormEscKeyDown);
-  sliderWrapper.classList.add('hidden');
-  effectList.addEventListener('change', onFilterButtonChange);
-};
-
-fileUpload.addEventListener('change', onFileUploadChange);
-
-formUploadClose.addEventListener('click', () => {
-  closeForm();
+const pristine = new Pristine(uploadForm, {
+  classTo: 'img-upload__field-wrapper',
+  errorClass: 'img-upload--invalid',
+  successClass: 'img-upload--valid',
+  errorTextParent: 'img-upload__field-wrapper',
+  errorTextTag: 'div',
+  errorTextClass: 'img-upload__error'
 });
 
-const changeZoom = (coefficient) => {
-  const size = parseInt(scaleButtonValue.value, 10) + coefficient * Zoom.STEP;
+const validateHashtagsCount = (value) => value.trim().split(' ').length <= MAX_HASHTAGS_COUNT;
 
-  scaleButtonValue.value = `${size}%`;
-  imagePreview.style.transform = `scale(${size / 100})`;
+const validateHashtagsUniqueness = (value) => {
+  const hashtags = value.split(' ');
+  const hashTagMap = {};
+  for (let i = 0; i < hashtags.length; i++) {
+    const hashtag = hashtags[i];
+    if (hashtag in hashTagMap) {
+      return false;
+    }
+    hashTagMap[hashtag] = true;
+  }
+  return true;
 };
 
-scaleButtonSmaller.addEventListener('click', (evt) => {
+const validHashtages = (value) => {
+  if (value.length === 0) {
+    return true;
+  }
+  const hashtags = value.trim().split(' ');
+  for (let i = 0; i < hashtags.length; ++i) {
+    if (!validationForm.test(hashtags[i])) {
+      return false;
+    }
+  }
+  return true;
+};
+
+pristine.addValidator(
+  hashtagsField,
+  validateHashtagsCount,
+  'Максимальное количество хэштегов - 5'
+);
+
+pristine.addValidator(
+  hashtagsField,
+  validateHashtagsUniqueness,
+  'Не должно быть повторяющихся хэштегов'
+);
+
+pristine.addValidator(
+  hashtagsField,
+  validHashtages,
+  'Ошибка хештега'
+);
+
+const validateDescription = (value) => value.trim().length <= MAX_DESCRIPTION_LENGTH;
+
+pristine.addValidator(
+  descriptionField,
+  validateDescription,
+  'Описание не может быть больше 140 символов'
+);
+
+function closeOverlay(){
+  resetEffect();
+  resetScale();
+  imageOverlay.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  closeButton.removeEventListener('click', closeOverlay);
+  document.removeEventListener('keydown', closeOnEscKeyDown(closeOverlay));
+  uploadInput.addEventListener('click', openOverlay);
+  uploadInput.value = null;
+  hashtagsField.textContent = '';
+  descriptionField.textContent = '';
+}
+
+function openOverlay() {
+  initEffect();
+  imageOverlay.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  closeButton.addEventListener('click', closeOverlay);
+  document.addEventListener('keydown', closeOnEscKeyDown(closeOverlay));
+  uploadInput.removeEventListener('click', openOverlay);
+}
+
+uploadInput.addEventListener('change', openOverlay);
+
+hashtagsField.addEventListener('input', (evt) => {
   evt.preventDefault();
-
-  const coefficient = -1;
-
-  if (parseInt(scaleButtonValue.value, 10) > Zoom.MIN) {
-    changeZoom(coefficient);
+  const isValid = pristine.validate();
+  if (!isValid) {
+    submitBtn.setAttribute('disabled', true);
+  }
+  else{
+    submitBtn.removeAttribute('disabled');
   }
 });
 
-scaleButtonBigger.addEventListener('click', (evt) => {
+descriptionField.addEventListener('input', (evt) => {
   evt.preventDefault();
-
-  const coefficient = 1;
-
-  if (parseInt(scaleButtonValue.value, 10) < Zoom.MAX) {
-    changeZoom(coefficient);
+  const isValid = pristine.validate();
+  if (!isValid) {
+    submitBtn.setAttribute('disabled', true);
+  }
+  else{
+    submitBtn.removeAttribute('disabled');
   }
 });
-
-export { imagePreview };

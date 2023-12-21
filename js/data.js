@@ -1,6 +1,17 @@
 import {getRandomInt, getRandomIdFromRange} from './util.js';
 
+const MAX_HASHTAGS_COUNT = 5;
+const MAX_DESCRIPTION_LENGTH = 140;
 const PHOTO_COUNT = 25;
+
+export const SCALE_STEP = 25;
+
+export const DEFAULT_SCALE = 100;
+
+export const SCALE = {
+  MIN: 25,
+  MAX: 100
+};
 
 const COMMENTS = [
   'Всё отлично!',
@@ -63,4 +74,4 @@ const createPhoto = (id) => ({
 
 const photos = Array.from({length: PHOTO_COUNT}, (_, index) => createPhoto(index + 1));
 
-export {photos};
+export {photos, MAX_DESCRIPTION_LENGTH, MAX_HASHTAGS_COUNT};
