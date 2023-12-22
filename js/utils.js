@@ -1,46 +1,24 @@
-const ERROR_Z_POSITION = 100;
-const ERROR_FONT_SIZE = 20;
-const ERROR_VERTICAL_PADDING = 10;
-const ERROR_HORIZONTAL_PADDING = 50;
+const DEBOUNCE_DELAY = 500;
 
-/*const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+const isEscape = (evt) => evt.key === 'Escape';
 
-const getRandomIdFromRange = (min, max) => {
-  const previousValues = [];
+const debounce = (callback) => {
+  let timeoutId;
 
-  return function () {
-    let currentValue = getRandomInt(min, max);
-    if (previousValues.length >= (max - min + 1)) {
-      return null;
-    }
-    while (previousValues.includes(currentValue)) {
-      currentValue = getRandomInt(min, max);
-    }
-    previousValues.push(currentValue);
-    return currentValue;
+  return (...rest) => {
+    clearTimeout(timeoutId);
+
+    timeoutId = setTimeout(() => callback.apply(this, rest), DEBOUNCE_DELAY);
   };
-};*/
-
-const isEscapeKey = (evt) => evt.key === 'Esc' || evt.key === 'Escape';
-
-const showUnloadingErrorMessage = (errorText) => {
-  const errorMessage = document.createElement('div');
-
-  errorMessage.style.zIndex = ERROR_Z_POSITION;
-  errorMessage.style.color = 'white';
-  errorMessage.style.backgroundColor = '#9C281B';
-  errorMessage.style.fontSize = `${ERROR_FONT_SIZE}px`;
-  errorMessage.style.textAlign = 'center';
-  errorMessage.style.padding = `${ERROR_VERTICAL_PADDING}px ${ERROR_HORIZONTAL_PADDING}px`;
-  errorMessage.style.position = 'absolute';
-  errorMessage.style.left = 0;
-  errorMessage.style.right = 0;
-  errorMessage.style.top = 0;
-
-  errorMessage.textContent = errorText;
-
-  document.body.append(errorMessage);
 };
 
-export {isEscapeKey, showUnloadingErrorMessage};
+const shuffle = (array) => {
+  for(let firstIndex = array.length - 1; firstIndex > 0; firstIndex--) {
+    const randomIndex = Math.floor(Math.random() * (firstIndex + 1));
+    [array[firstIndex], array[randomIndex]] = [array[randomIndex], array[firstIndex]];
+  }
 
+  return array;
+};
+
+export {isEscape, debounce, shuffle};
