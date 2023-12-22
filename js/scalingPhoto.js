@@ -1,44 +1,26 @@
-const Scale = {
-  STEP: 25,
-  MAX: 100,
+const RADIX = 10;
+
+const SCALE = {
   MIN: 25,
+  MAX: 100,
+  STEP: 25,
+  DEFAULT: 100
 };
 
-const uploadingOverlay = document.querySelector('.img-upload__overlay');
-const uploadingPicture = uploadingOverlay.querySelector('.img-upload__preview').querySelector('img');
-const scale = uploadingOverlay.querySelector('.img-upload__scale');
-const scalerField = scale.querySelector('.scale__control--value');
+const modalElement = document.querySelector('.img-upload');
+const smallerButtonElement = modalElement.querySelector('.scale__control--smaller');
+const biggerButtonElement = modalElement.querySelector('.scale__control--bigger');
+const scaleInputElement = modalElement.querySelector('.scale__control--value');
+const imageElement = modalElement.querySelector('.img-upload__preview img');
 
-const changeScale = (scaleCoefficient) => {
-  let scaleNumber = Number(scalerField.value.replace('%', '')) + scaleCoefficient * Scale.STEP;
-
-  if(scaleNumber < Scale.MIN) {
-    scaleNumber = Scale.MIN;
-  }
-  else if (scaleNumber > Scale.MAX) {
-    scaleNumber = Scale.MAX;
-  }
-
-  scalerField.value = `${scaleNumber}%`;
-  uploadingPicture.style.transform = `scale(${scaleNumber / 100})`;
+const imageScale = (value) => {
+  imageElement.style.transform = `scale(${value / 100})`;
+  scaleInputElement.value = `${value}%`;
 };
 
-const onScaleButtonClick = (evt) => {
-  if(evt.target.matches('button')) {
-    let coefficient = 1;
-    if(evt.target.matches('.scale__control--smaller')) {
-      coefficient = -1;
-    }
+const onSmallerButtonClick = () => imageScale(Math.max(parseInt(scaleInputElement.value, RADIX) - SCALE.STEP, SCALE.MIN));
 
-    changeScale(coefficient);
-  }
-};
+const onBiggerButtonClick = () => imageScale(Math.min(parseInt(scaleInputElement.value, RADIX) + SCALE.STEP, SCALE.MAX));
 
-const scalingPhotos = () => {
-  scalerField.value = `${Scale.MAX}%`;
-  uploadingPicture.style.transform = `scale(${Scale.MAX / 100})`;
-};
-
-scale.addEventListener('click', onScaleButtonClick);
-
-export{scalingPhotos};
+smallerButtonElement.addEventListener('click', onSmallerButtonClick);
+biggerButtonElement.addEventListener('click', onBiggerButtonClick);
