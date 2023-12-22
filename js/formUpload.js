@@ -1,5 +1,5 @@
 import { uploadHashtagInput, clearHashtagsField, checkFormValidation } from './hashtags.js';
-import { isEscapeKey } from './utils.js';
+import { isEscape } from './utils.js';
 import { scalingPhotos } from './scalingPhoto.js';
 import { setEffects } from './effectsOnPhoto.js';
 import { setData } from './fetch.js';
@@ -26,7 +26,7 @@ const clearForm = () => {
 };
 
 const onEscapeKeyDown = (evt) => {
-  if(isEscapeKey(evt) && !evt.target.classList.contains('text__hashtags') && !evt.target.classList.contains('text__description')) {
+  if(isEscape(evt) && !evt.target.classList.contains('text__hashtags') && !evt.target.classList.contains('text__description')) {
     clearForm();
     document.removeEventListener('keydown', onEscapeKeyDown);
   }

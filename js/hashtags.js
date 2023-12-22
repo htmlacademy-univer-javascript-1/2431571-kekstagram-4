@@ -1,10 +1,8 @@
 const MAX_HASHTAGS_COUNT = 5;
 const MAX_HASHTAGS_LENGTH = 20;
-
 const form = document.querySelector('.img-upload__form');
 const inputHashtag = form.querySelector('.text__hashtags');
 const submitButton = form.querySelector('#upload-submit');
-
 const pristine = new Pristine(form, {
   classTo: 'img-upload__field-wrapper',
   errorClass: 'img-upload__item--invalid',
@@ -15,9 +13,7 @@ const pristine = new Pristine(form, {
 });
 
 let errorMessage = '';
-
 const getErrorMessage = () => errorMessage;
-
 const hashtagErrorHandler = (value) => {
   errorMessage = '';
   const hashtagInputText = value.toLowerCase().trim();
