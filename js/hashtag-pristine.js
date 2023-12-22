@@ -2,7 +2,7 @@ const MAX_SYMBOLS = 20;
 const MAX_HASHTAGS = 5;
 
 const formUpload = document.querySelector('.img-upload__form');
-const submitButton = document.querySelector('#upload-submit');
+const submitBtn = document.querySelector('#upload-submit');
 
 const pristine = new Pristine(formUpload, {
   classTo: 'img-upload__field-wrapper',
@@ -15,20 +15,19 @@ const inputHashtag = document.querySelector('.text__hashtags');
 
 let errorMessage = '';
 
-const error = () => errorMessage;
+const error =  () => errorMessage;
 
-const hashtagsHandler = (value) => {
+const hashtagHandler = (value) =>{
   errorMessage = '';
 
   const inputText = value.toLowerCase().trim();
 
-  if (!inputText) {
+  if(!inputText) {
     return true;
   }
 
   const inputArray = inputText.split(/\s+/);
-
-  if (inputArray.length === 0) {
+  if(inputArray.length === 0){
     return true;
   }
 
@@ -39,7 +38,7 @@ const hashtagsHandler = (value) => {
     },
     {
       check: inputArray.some((item) => item[0] !== '#'),
-      error: 'Хэш-тег должен начинаться с символа #',
+      error: 'Хэш-тег должен начинаться с #',
     },
     {
       check: inputArray.some((item, num, arr) => arr.includes(item, num + 1)),
@@ -54,35 +53,36 @@ const hashtagsHandler = (value) => {
       error: `Нельзя указать больше ${MAX_HASHTAGS} хэш-тегов`,
     },
     {
-      check: inputArray.some((item) => !/^#[a-zа-яё0-9]{1,19}$/.test(item)),
+      check: inputArray.some((item) => !/^#[a-zа-яё0-9]{1,19}$/i.test(item)),
       error: 'Хэш-тег содержит недопустимые символы',
     },
   ];
-
   return rules.every((rule) => {
     const isInvalid = rule.check;
-    if (isInvalid) {
+    if(isInvalid){
       errorMessage = rule.error;
     }
     return !isInvalid;
   });
 };
 
-pristine.addValidator(inputHashtag, hashtagsHandler, error, 2, false);
-
-const onHashtagInput = () => {
-  if (pristine.validate()) {
-    submitButton.disabled = true;
+const onHashtagInput = (item) =>{
+  if(item.validate){
+    submitBtn.disabled = true;
   }
-  else {
-    submitButton.disabled = false;
+  else{
+    submitBtn.disabled = false;
   }
 };
 
+
+pristine.addValidator(inputHashtag, hashtagHandler, error, 2, false);
+
 inputHashtag.addEventListener('input', onHashtagInput);
-
-formUpload.addEventListener('change', (evt) => {
+formUpload.addEventListener('submit', (evt) => {
   evt.preventDefault();
-
+  onHashtagInput(evt);
   pristine.validate();
 });
+
+export {pristine};
