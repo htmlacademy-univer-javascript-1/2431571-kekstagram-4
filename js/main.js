@@ -1,11 +1,18 @@
-import {uploadForm} from './formUpload.js';
-import {setData} from './fetch.js';
-import {onRecieveSuccess, showUnloadingErrorMessage} from './upload-data.js';
+import {getData} from './api.js';
+import {showFilteredPhotos} from './filters.js';
+import './formUpload.js';
+import './effects.js';
+import './scalingPhoto.js';
 
-setData(onRecieveSuccess,
-  () => {
-    showUnloadingErrorMessage('Не удалось загрузить данные из сервера :(');
-  },
-  'GET');
+const loadPhotos = async () => {
+  try {
+    showFilteredPhotos(await getData());
+  }
+  catch (err){
+    const alertMessage = document.querySelector('#alert').content;
+    alertMessage.querySelector('.alert_message').textContent = err.message;
+    document.body.append(alertMessage);
+  }
+};
 
-uploadForm();
+loadPhotos();

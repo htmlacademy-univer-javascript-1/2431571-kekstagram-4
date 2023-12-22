@@ -1,38 +1,29 @@
-import { showBigPictures } from './showBigPictures.js';
+import {openPicture} from './showBigPicture.js';
 
+const picturesContainer = document.querySelector('.pictures');
 const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
-const pictures = document.querySelector('.pictures');
-const picturesFragment = document.createDocumentFragment();
 
-const renderPicture = (picture) => {
-  const newElement = pictureTemplate.cloneNode(true);
+const createPicture = ({url, description, likes, comments}) => {
+  const pictureElement = pictureTemplate.cloneNode(true);
+  pictureElement.querySelector('.picture__img').src = url;
+  pictureElement.querySelector('.picture__img').alt = description;
+  pictureElement.querySelector('.picture__likes').textContent = likes;
+  pictureElement.querySelector('.picture__comments').textContent = comments.length;
 
-  newElement.querySelector('.picture__img').src = picture.url;
-  newElement.querySelector('.picture__comments').textContent = picture.comments.length;
-  newElement.querySelector('.picture__likes').textContent = picture.likes;
-
-  newElement.addEventListener('click', (evt) => {
+  pictureElement.addEventListener('click', (evt) => {
     evt.preventDefault();
-
-    showBigPictures(picture);
+    openPicture({url, description, likes, comments});
   });
 
-  return newElement;
+  return pictureElement;
 };
 
-const renderPhotos = (images) => {
-  images.forEach((picture) => {
-    picturesFragment.appendChild(renderPicture(picture));
+const getPictures = (pictures) => {
+  const pictureFragments = document.createDocumentFragment();
+  pictures.forEach((picture) => {
+    pictureFragments.append(createPicture(picture));
   });
-
-  pictures.appendChild(picturesFragment);
+  picturesContainer.append(pictureFragments);
 };
 
-const removePhotos = () => {
-  const oldPictures = pictures.querySelectorAll('.picture');
-  oldPictures.forEach((p) => {
-    p.remove();
-  });
-};
-
-export {renderPhotos, removePhotos};
+export {getPictures};

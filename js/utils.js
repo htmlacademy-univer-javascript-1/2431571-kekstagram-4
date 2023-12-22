@@ -1,24 +1,36 @@
-const DEBOUNCE_DELAY = 500;
+const DELAY_TIME = 500;
 
-const isEscape = (evt) => evt.key === 'Escape';
+const getRandomInt = (numb1, numb2) => {
+  const lower = Math.ceil(Math.min(numb1, numb2));
+  const upper = Math.floor(Math.max(numb1, numb2));
+  const result = Math.random() * (upper - lower + 1) + lower;
+  return Math.floor(result);
+};
 
-const debounce = (callback) => {
+const getRandomElementsArray = (array, count) => {
+  const randomIndexList = [];
+  const max = Math.min(count, array.length);
+  while (randomIndexList.length < max) {
+    const index = getRandomInt(0, array.length - 1);
+    if (!randomIndexList.includes(index)) {
+      randomIndexList.push(index);
+    }
+  }
+  return randomIndexList.map((index) => array[index]);
+};
+
+const getUrl = (url, derictory, format) => derictory + url + format;
+
+const isEscapeKey = (evt) => evt.key === 'Esc' || evt.key === 'Escape';
+
+function debounce (callback, timeoutDelay = DELAY_TIME) {
   let timeoutId;
 
   return (...rest) => {
     clearTimeout(timeoutId);
 
-    timeoutId = setTimeout(() => callback.apply(this, rest), DEBOUNCE_DELAY);
+    timeoutId = setTimeout(() => callback.apply(this, rest), timeoutDelay);
   };
-};
+}
 
-const shuffle = (array) => {
-  for(let firstIndex = array.length - 1; firstIndex > 0; firstIndex--) {
-    const randomIndex = Math.floor(Math.random() * (firstIndex + 1));
-    [array[firstIndex], array[randomIndex]] = [array[randomIndex], array[firstIndex]];
-  }
-
-  return array;
-};
-
-export {isEscape, debounce, shuffle};
+export {getRandomElementsArray, getUrl, isEscapeKey, debounce};

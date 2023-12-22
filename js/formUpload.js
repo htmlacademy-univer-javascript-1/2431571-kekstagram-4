@@ -1,67 +1,83 @@
-import { uploadHashtagInput, clearHashtagsField, checkFormValidation } from './hashtags.js';
-import { isEscape } from './utils.js';
-import { scalingPhotos } from './scalingPhoto.js';
-import { setEffects } from './effectsOnPhoto.js';
-import { setData } from './fetch.js';
-import { addPostMessages, showSuccessMessage, closeMessage, showErrorMessage } from './postMessages.js';
+import {isEscapeKey} from './utils.js';
+import {sendData} from './api.js';
+import {showSuccessMessage, showErrorMessage} from './message.js';
+import {pristine} from './validation.js';
 
-const form = document.querySelector('.img-upload__form');
+const FILE_TYPES = ['jpg', 'jpeg', 'png'];
 
-const uploadingControl = form.querySelector('#upload-file');
-const uploadingOverlay = form.querySelector('.img-upload__overlay');
-const uploadingClose = form.querySelector('#upload-cancel');
+const body = document.body;
+const uploadForm = document.querySelector('.img-upload__form');
+const pictureUploadInput = uploadForm.querySelector('.img-upload__input');
+const closeButton = uploadForm.querySelector('.img-upload__cancel');
+const pictureOverlay = uploadForm.querySelector('.img-upload__overlay');
+const picturePreview = document.querySelector('.img-upload__preview img');
+const submitButton = uploadForm.querySelector('.img-upload__submit');
+const commentField = uploadForm.querySelector('.text__description');
+const hashtagsField = uploadForm.querySelector('.text__hashtags');
+const pictureFile = document.querySelector('.img-upload__start input[type=file]');
+const effectsPreviews = document.querySelectorAll('.effects__list .effects__preview');
 
-const uploadingComments = uploadingOverlay.querySelector('.text__description');
-const uploadingButton = uploadingOverlay.querySelector('#upload-submit');
-const clearForm = () => {
-  uploadingOverlay.classList.add('hidden');
-  document.querySelector('body').classList.remove('modal-open');
-  uploadingControl.value = '';
-  clearHashtagsField();
-  uploadingComments.value = '';
+const isTextFieldFocused = () =>
+  document.activeElement === hashtagsField || document.activeElement === commentField;
 
-  closeMessage();
-
-  uploadingButton.disabled = false;
-};
-
-const onEscapeKeyDown = (evt) => {
-  if(isEscape(evt) && !evt.target.classList.contains('text__hashtags') && !evt.target.classList.contains('text__description')) {
-    clearForm();
-    document.removeEventListener('keydown', onEscapeKeyDown);
-  }
+const resetField = () => {
+  commentField.value = '';
+  hashtagsField.value = '';
 };
 
 const closeForm = () => {
-  clearForm();
-
-  document.removeEventListener('keydown', onEscapeKeyDown);
+  body.classList.remove('modal-open');
+  pictureOverlay.classList.add('hidden');
+  closeButton.removeEventListener('click', closeForm);
+  document.removeEventListener('keydown', closeFormByEscape);
+  pictureUploadInput.value = '';
+  pristine.reset();
 };
 
-uploadingClose.addEventListener('click', closeForm);
-
-const onUploadClick = () => {
-  document.addEventListener('keydown', onEscapeKeyDown);
-  uploadingOverlay.classList.remove('hidden');
-  document.querySelector('body').classList.add('modal-open');
-  scalingPhotos();
-  setEffects();
-  uploadHashtagInput();
-};
-
-const uploadForm = () => {
-  uploadingControl.addEventListener('change', onUploadClick);
-  addPostMessages();
-};
-
-const onFormSubmit = (evt) => {
-  evt.preventDefault();
-
-  if(checkFormValidation()) {
-    setData(showSuccessMessage, showErrorMessage, 'POST', new FormData(form));
+function closeFormByEscape(evt) {
+  const errorMessage = document.querySelector('.error');
+  if (isEscapeKey(evt) && !isTextFieldFocused() && !errorMessage) {
+    evt.preventDefault();
+    closeForm();
   }
-};
+}
 
-form.addEventListener('submit', onFormSubmit);
+pictureUploadInput.addEventListener('change', () => {
+  pictureOverlay.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  document.querySelector('.effect-level__slider').parentNode.classList.add('hidden');
+  document.querySelector('.scale__control--value').value = '100%';
+  picturePreview.removeAttribute('style');
+  closeButton.addEventListener('click', closeForm);
+  document.addEventListener('keydown', closeFormByEscape);
+});
 
-export{uploadForm, closeForm, onEscapeKeyDown};
+const isValidType = (file) => FILE_TYPES.some((it) => file.name.toLowerCase().endsWith(it));
+
+pictureFile.addEventListener('change', () => {
+  const file = pictureFile.files[0];
+  if (file && isValidType(file)) {
+    picturePreview.src = URL.createObjectURL(file);
+    effectsPreviews.forEach((element) => {
+      element.style.backgroundImage = `url(${picturePreview.src})`;
+    });
+  }
+});
+
+uploadForm.addEventListener('submit', async (evt) => {
+  evt.preventDefault();
+  if (pristine.validate()) {
+    submitButton.disabled = true;
+    await sendData(new FormData(uploadForm))
+      .then(() => {
+        showSuccessMessage();
+        closeForm();
+        resetField();
+      })
+      .catch(() => {
+        showErrorMessage();
+        closeForm();
+      });
+    submitButton.disabled = false;
+  }
+});
