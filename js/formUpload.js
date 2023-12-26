@@ -1,6 +1,6 @@
 import {isEscapeKey} from './utils.js';
 import {sendData} from './api.js';
-import {showSuccessMessage, showErrorMessage} from './message.js';
+import {onSuccess, onFail} from './message.js';
 import {pristine} from './validation.js';
 
 const FILE_TYPES = ['jpg', 'jpeg', 'png'];
@@ -20,18 +20,17 @@ const effectsPreviews = document.querySelectorAll('.effects__list .effects__prev
 const isTextFieldFocused = () =>
   document.activeElement === hashtagsField || document.activeElement === commentField;
 
-const resetField = () => {
-  commentField.value = '';
-  hashtagsField.value = '';
-};
-
 const closeForm = () => {
-  body.classList.remove('modal-open');
-  pictureOverlay.classList.add('hidden');
-  closeButton.removeEventListener('click', closeForm);
-  document.removeEventListener('keydown', closeFormByEscape);
-  pictureUploadInput.value = '';
-  pristine.reset();
+    body.classList.remove('modal-open');
+    pictureOverlay.classList.add('hidden');
+    closeButton.removeEventListener('click', closeForm);
+    document.removeEventListener('keydown', closeFormByEscape);
+    pictureUploadInput.value = '';
+    pristine.reset();
+    uploadForm.reset();
+    hashtagsField.textContent = '';
+    commentField.textContent = '';
+    submitButton.removeAttribute('disabled');
 };
 
 function closeFormByEscape(evt) {
@@ -70,13 +69,10 @@ uploadForm.addEventListener('submit', async (evt) => {
     submitButton.disabled = true;
     await sendData(new FormData(uploadForm))
       .then(() => {
-        showSuccessMessage();
-        closeForm();
-        resetField();
+        onSuccess();
       })
       .catch(() => {
-        showErrorMessage();
-        closeForm();
+        onFail();
       });
     submitButton.disabled = false;
   }

@@ -19,8 +19,6 @@ const getRandomElementsArray = (array, count) => {
   return randomIndexList.map((index) => array[index]);
 };
 
-const getUrl = (url, derictory, format) => derictory + url + format;
-
 const isEscapeKey = (evt) => evt.key === 'Esc' || evt.key === 'Escape';
 
 function debounce (callback, timeoutDelay = DELAY_TIME) {
@@ -33,4 +31,4 @@ function debounce (callback, timeoutDelay = DELAY_TIME) {
   };
 }
 
-export {getRandomElementsArray, getUrl, isEscapeKey, debounce};
+export {getRandomElementsArray, isEscapeKey, debounce};
