@@ -1,6 +1,6 @@
 import {isEscapeKey} from './utils.js';
 import {sendData} from './api.js';
-import {onSuccess, onFail} from './message.js';
+import {showSuccessMessage, showErrorMessage} from './message.js';
 import {pristine} from './validation.js';
 
 const FILE_TYPES = ['jpg', 'jpeg', 'png'];
@@ -69,10 +69,12 @@ uploadForm.addEventListener('submit', async (evt) => {
     submitButton.disabled = true;
     await sendData(new FormData(uploadForm))
       .then(() => {
-        onSuccess();
+        showSuccessMessage();
+        closeForm();
       })
       .catch(() => {
-        onFail();
+        showErrorMessage();
+        closeForm();
       });
     submitButton.disabled = false;
   }
