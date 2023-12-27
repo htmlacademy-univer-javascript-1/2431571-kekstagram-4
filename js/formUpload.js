@@ -73,7 +73,6 @@ uploadForm.addEventListener('submit', async (evt) => {
       })
       .catch(() => {
         showErrorMessage();
-        closeForm();
       });
     submitButton.disabled = false;
   }
