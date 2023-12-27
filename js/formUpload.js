@@ -17,20 +17,19 @@ const hashtagsField = uploadForm.querySelector('.text__hashtags');
 const pictureFile = document.querySelector('.img-upload__start input[type=file]');
 const effectsPreviews = document.querySelectorAll('.effects__list .effects__preview');
 
-const isTextFieldFocused = () =>
-  document.activeElement === hashtagsField || document.activeElement === commentField;
+const isTextFieldFocused = () => document.activeElement === hashtagsField || document.activeElement === commentField;
 
 const closeForm = () => {
-    body.classList.remove('modal-open');
-    pictureOverlay.classList.add('hidden');
-    closeButton.removeEventListener('click', closeForm);
-    document.removeEventListener('keydown', closeFormByEscape);
-    pictureUploadInput.value = '';
-    pristine.reset();
-    uploadForm.reset();
-    hashtagsField.textContent = '';
-    commentField.textContent = '';
-    submitButton.removeAttribute('disabled');
+  body.classList.remove('modal-open');
+  pictureOverlay.classList.add('hidden');
+  closeButton.removeEventListener('click', closeForm);
+  document.removeEventListener('keydown', closeFormByEscape);
+  pictureUploadInput.value = '';
+  pristine.reset();
+  uploadForm.reset();
+  hashtagsField.textContent = '';
+  commentField.textContent = '';
+  submitButton.removeAttribute('disabled');
 };
 
 function closeFormByEscape(evt) {
