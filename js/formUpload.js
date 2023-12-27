@@ -17,13 +17,7 @@ const hashtagsField = uploadForm.querySelector('.text__hashtags');
 const pictureFile = document.querySelector('.img-upload__start input[type=file]');
 const effectsPreviews = document.querySelectorAll('.effects__list .effects__preview');
 
-const isTextFieldFocused = () =>
-  document.activeElement === hashtagsField || document.activeElement === commentField;
-
-const resetField = () => {
-  commentField.value = '';
-  hashtagsField.value = '';
-};
+const isTextFieldFocused = () => document.activeElement === hashtagsField || document.activeElement === commentField;
 
 const closeForm = () => {
   body.classList.remove('modal-open');
@@ -32,6 +26,10 @@ const closeForm = () => {
   document.removeEventListener('keydown', closeFormByEscape);
   pictureUploadInput.value = '';
   pristine.reset();
+  uploadForm.reset();
+  hashtagsField.textContent = '';
+  commentField.textContent = '';
+  submitButton.removeAttribute('disabled');
 };
 
 function closeFormByEscape(evt) {
@@ -72,7 +70,6 @@ uploadForm.addEventListener('submit', async (evt) => {
       .then(() => {
         showSuccessMessage();
         closeForm();
-        resetField();
       })
       .catch(() => {
         showErrorMessage();
